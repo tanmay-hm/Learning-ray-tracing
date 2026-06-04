@@ -5,7 +5,20 @@
 #include <fstream>
 using namespace std;
 
+bool hit_sphere(const point3& centre,double radius,const ray& r){
+    auto orig_centre = centre - r.origin();
+    auto a = dot(r.direction(),r.direction());
+    auto b = -2 * dot(r.direction(),orig_centre);
+    auto c = dot(orig_centre,orig_centre) - radius*radius;
+    auto discriminant = b*b - 4*a*c;
+    if(discriminant<0) return false;
+    return true;
+}
+
 color ray_color(const ray& r){
+    if(hit_sphere(point3(0,0,-1),0.5,r)){
+        return color(1,0,0);
+    }
     color white = color(1,1,1);
     color blue = color(0.5,0.5,1);
     auto blue_intensity = normalise(r.direction()).y;
