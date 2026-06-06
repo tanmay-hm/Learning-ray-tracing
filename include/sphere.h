@@ -1,0 +1,38 @@
+#pragma once
+
+#include "hittable.h"
+#include "util.h"
+
+class sphere : public hittable{
+    private:
+        point3 centre;
+        double radius;
+    public: 
+        sphere(const point3 c,double rad) : centre(c),radius(std::fmax(0,rad)) {}
+
+        bool hit(const ray&r,double t_min,double t_max,hit_record& rec) const override{
+            auto orig_centre = centre - r.origin();
+            auto a = dot(r.direction(),r.direction());
+            auto h = dot(r.direction(),orig_centre);
+            auto c = dot(orig_centre,orig_centre) - radius*radius;
+            auto discriminant = h*h - a*c;
+
+            if(discriminant<0) return false;
+
+            auto root = (h - std::sqrt(discriminant))/a;
+
+            if(t_min>root || root>t_max){
+                root = (h + std::sqrt(discriminant))/a;
+                if(t_min>root || root>t_max){
+                    return false;
+                }
+            }
+
+            rec.t = root;
+            rec.hit_location = r.at(rec.t);
+            auto out_normal = (rec.hit_location - centre)/radius;
+            rec.set_face_normal(r,out_normal);
+
+            return true;
+        }
+};
