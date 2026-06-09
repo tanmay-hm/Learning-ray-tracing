@@ -1,22 +1,27 @@
 #pragma once
 
 #include "hittable.h"
+#include "util.h"
 #include <fstream>
 
 class camera{
     public:
         double aspect_ratio = 1.0;
         int width = 100;
+        int samples_per_pixel = 10;
 
         void render(const hittable& world){
             init();
             std::ofstream fp("image.ppm");
             fp << "P3\n" << width << " " << height << "\n255\n";
-            for(int i=0;i<height;i++){
-                for(int j=0;j<width;j++){
-                    auto pix = pixel00loc + i*pixel_delta_v + j*pixel_delta_u;
-                    ray r = ray(centre,pix-centre);
-                    color_out(fp,ray_color(r,world));
+            for(int j=0;j<height;j++){
+                for(int i=0;i<width;i++){
+                    color pixel_color(0,0,0);
+                    for(int sample = 0;sample<samples_per_pixel;sample++){
+                        ray r = get_ray(i,j);
+                        pixel_color += ray_color(r,world);
+                    }
+                    color_out(fp,pixel_color * pixel_color_scale);
                 }
             }
         }
@@ -25,12 +30,14 @@ class camera{
         int height;
         point3 centre;
         point3 pixel00loc;
+        double pixel_color_scale;
         vec3 pixel_delta_u;
         vec3 pixel_delta_v;
         
         void init(){
 
             height = std::max(1,int(width/aspect_ratio));
+            pixel_color_scale = 1.0/samples_per_pixel;
     
             double focal_length = 1.0;
             centre = point3(0,0,0);
@@ -51,6 +58,18 @@ class camera{
     
             point3 viewport_top_left = centre - vec3(0,0,focal_length) - viewport_u/2 - viewport_v/2;
             pixel00loc = viewport_top_left + pixel_delta_u/2 + pixel_delta_v/2;
+        }
+
+        ray get_ray(int i,int j) const{
+            auto offset = sample_square();
+            auto pixel_sample = pixel00loc + (i+offset.x)*pixel_delta_u + (j+offset.y)*pixel_delta_v;
+            auto origin = centre;
+            auto direction = pixel_sample - centre;
+            return ray(origin,direction);
+        }
+
+        vec3 sample_square() const{
+            return vec3(random_double()-0.5,random_double()-0.5,0);
         }
 
         color ray_color(const ray& r,const hittable& world) const{
