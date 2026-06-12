@@ -14,7 +14,7 @@ int main(){
     cam.aspect_ratio = 16.0/9.0;
     cam.width = 800;
     cam.samples_per_pixel = 100;
-
+    cam.max_bounces = 50;
     // Objects in scene
 
     hittable_list world;

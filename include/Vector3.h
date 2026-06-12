@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <ostream>
+#include "util.h"
 
 class vec3{
     public:
@@ -9,6 +10,14 @@ class vec3{
 
         vec3() : x{0},y{0},z{0} {}
         vec3(double a,double b,double c) : x{a},y{b},z{c} {}
+
+        static vec3 random(){
+            return vec3(random_double(),random_double(),random_double());
+        }
+
+        static vec3 random(double min,double max){
+            return vec3(random_double(min,max),random_double(min,max),random_double(min,max));
+        }
         
         double length() const{
             return std::sqrt(squared_length());
@@ -75,4 +84,22 @@ inline vec3 cross(const vec3& left,const vec3& right){
 }
 inline vec3 normalise(const vec3& v){
     return v/v.length();
+}
+inline vec3 random_unit_vector(){
+    while(true){
+        vec3 v = vec3::random(-1,1);
+        auto lensq = v.squared_length();
+        if(1e-160<lensq && lensq<=1){
+            return v/std::sqrt(lensq);
+        }
+    }
+}
+inline vec3 random_on_hemisphere(const vec3& normal){
+    vec3 output = random_unit_vector();
+    if(dot(output,normal)>0.0){
+        return output;
+    }
+    else{
+        return -output;
+    }
 }

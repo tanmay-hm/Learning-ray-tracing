@@ -9,6 +9,7 @@ class camera{
         double aspect_ratio = 1.0;
         int width = 100;
         int samples_per_pixel = 10;
+        int max_bounces = 10;
 
         void render(const hittable& world){
             init();
@@ -19,7 +20,7 @@ class camera{
                     color pixel_color(0,0,0);
                     for(int sample = 0;sample<samples_per_pixel;sample++){
                         ray r = get_ray(i,j);
-                        pixel_color += ray_color(r,world);
+                        pixel_color += ray_color(r,world,max_bounces);
                     }
                     color_out(fp,pixel_color * pixel_color_scale);
                 }
@@ -72,10 +73,14 @@ class camera{
             return vec3(random_double()-0.5,random_double()-0.5,0);
         }
 
-        color ray_color(const ray& r,const hittable& world) const{
+        color ray_color(const ray& r,const hittable& world,int depth) const{
+            if(depth<0){
+                return color(0,0,0);
+            }
             hit_record rec;
-            if(world.hit(r,interval(0,infinity),rec)){
-                return 0.5*(rec.normal+color(1,1,1));
+            if(world.hit(r,interval(0.001,infinity),rec)){
+                vec3 direction = rec.normal + random_unit_vector();
+                return 0.5 * ray_color(ray(rec.hit_location,direction),world,depth-1);
             }
             // sky gradient (blue to white)
             color white = color(1,1,1);
