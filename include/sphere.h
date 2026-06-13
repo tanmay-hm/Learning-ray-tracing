@@ -2,13 +2,15 @@
 
 #include "hittable.h"
 #include "util.h"
+#include "material.h"
 
 class sphere : public hittable{
     private:
         point3 centre;
         double radius;
+        shared_ptr<material> mat;
     public: 
-        sphere(const point3 c,double rad) : centre(c),radius(std::fmax(0,rad)) {}
+        sphere(const point3& c,double rad,shared_ptr<material> mat) : centre(c),radius(std::fmax(0,rad)), mat(mat) {}
 
         bool hit(const ray&r,const interval& t_range,hit_record& rec) const override{
             auto orig_centre = centre - r.origin();
@@ -32,6 +34,7 @@ class sphere : public hittable{
             rec.hit_location = r.at(rec.t);
             auto out_normal = (rec.hit_location - centre)/radius;
             rec.set_face_normal(r,out_normal);
+            rec.mat = mat;
 
             return true;
         }

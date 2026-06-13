@@ -18,6 +18,11 @@ class vec3{
         static vec3 random(double min,double max){
             return vec3(random_double(min,max),random_double(min,max),random_double(min,max));
         }
+
+        bool near_zero() const{
+            double limit = 1e-8;
+            return (std::fabs(x) < limit) && (std::fabs(y) < limit) && (std::fabs(z) < limit);
+        }
         
         double length() const{
             return std::sqrt(squared_length());
@@ -73,6 +78,9 @@ inline vec3 operator*(double f,vec3 right){
 inline vec3 operator/(vec3 left,double f){
     return left/=f;
 }
+inline vec3 operator*(vec3 left,vec3 right){
+    return vec3(left.x*right.x,left.y*right.y,left.z*right.z);
+}
 inline double dot(const vec3& left,const vec3& right){
     return left.x * right.x + left.y * right.y + left.z * right.z;
 }
@@ -102,4 +110,9 @@ inline vec3 random_on_hemisphere(const vec3& normal){
     else{
         return -output;
     }
+}
+
+inline vec3 reflect(const vec3& incident, const vec3& normal){
+    vec3 reflected = incident - 2*dot(incident,normal)*normal;
+    return reflected;
 }
