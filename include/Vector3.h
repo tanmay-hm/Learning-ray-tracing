@@ -111,6 +111,14 @@ inline vec3 random_on_hemisphere(const vec3& normal){
         return -output;
     }
 }
+inline vec3 random_on_disk(){
+    while(true){
+        vec3 v = vec3(random_double(-1,1),random_double(-1,1),0);
+        if(v.length()<1){
+            return v;
+        }
+    }
+}
 inline vec3 reflect(const vec3& incident, const vec3& normal){
     vec3 reflected = incident - 2*dot(incident,normal)*normal;
     return reflected;
