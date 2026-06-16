@@ -11,6 +11,10 @@ class camera{
         int width = 100;
         int samples_per_pixel = 10;
         int max_bounces = 10;
+        double vfov = 90.0;
+        point3 lookfrom = point3(0,0,0);
+        point3 lookat = point3(0,0,-1);
+        vec3 vup = vec3(0,1,0);
 
         void render(const hittable& world){
             init();
@@ -35,21 +39,26 @@ class camera{
         double pixel_color_scale;
         vec3 pixel_delta_u;
         vec3 pixel_delta_v;
+        vec3 u,v,w;
         
         void init(){
-
+            
             height = std::max(1,int(width/aspect_ratio));
             pixel_color_scale = 1.0/samples_per_pixel;
-    
-            double focal_length = 1.0;
-            centre = point3(0,0,0);
-            double viewport_height = 2.0;
+            
+            double focal_length = (lookfrom - lookat).length();
+            double h = std::tan(degrees_to_radians(vfov/2));
+            double viewport_height = 2.0 * h * focal_length;
             double viewport_width = viewport_height*((double)width/height);
+            w = normalise(lookfrom - lookat);
+            u = normalise(cross(vup,w));
+            v = cross(w,u);
+            centre = lookfrom;
     
             // left-right and top-bottom vectors
     
-            vec3 viewport_u = vec3(viewport_width,0,0);
-            vec3 viewport_v = vec3(0,-viewport_height,0);
+            vec3 viewport_u = u * viewport_width;
+            vec3 viewport_v = -v * viewport_height;
     
             // pixel deltas
     
@@ -58,7 +67,7 @@ class camera{
     
             // top-left pixel location
     
-            point3 viewport_top_left = centre - vec3(0,0,focal_length) - viewport_u/2 - viewport_v/2;
+            point3 viewport_top_left = centre - (focal_length*w) - viewport_u/2 - viewport_v/2;
             pixel00loc = viewport_top_left + pixel_delta_u/2 + pixel_delta_v/2;
         }
 
