@@ -17,19 +17,26 @@ class camera{
         vec3 vup = vec3(0,1,0);
         double defocus_angle = 0;
         double focus_dist = 10;
+        color sky_color = color(0.0,0.25,1);
+        int fps = 24;
+        int runtime = 1;
+        int total_frames = 24;
 
         void render(const hittable& world){
             init();
-            std::ofstream fp("image.ppm");
-            fp << "P3\n" << width << " " << height << "\n255\n";
-            for(int j=0;j<height;j++){
-                for(int i=0;i<width;i++){
-                    color pixel_color(0,0,0);
-                    for(int sample = 0;sample<samples_per_pixel;sample++){
-                        ray r = get_ray(i,j);
-                        pixel_color += ray_color(r,world,max_bounces);
+            for(int frame = 1;frame<=total_frames;frame++){
+                std::string file_name = "Output\\image" + std::to_string(frame) + ".ppm";
+                std::ofstream fp(file_name);
+                fp << "P3\n" << width << " " << height << "\n255\n";
+                for(int j=0;j<height;j++){
+                    for(int i=0;i<width;i++){
+                        color pixel_color(0,0,0);
+                        for(int sample = 0;sample<samples_per_pixel;sample++){
+                            ray r = get_ray(i,j,frame);
+                            pixel_color += ray_color(r,world,max_bounces);
+                        }
+                        color_out(fp,pixel_color * pixel_color_scale);
                     }
-                    color_out(fp,pixel_color * pixel_color_scale);
                 }
             }
         }
@@ -43,12 +50,13 @@ class camera{
         vec3 pixel_delta_v;
         vec3 u,v,w;
         vec3 defocus_disk_u;
-        vec3 defocus_disk_v;  
+        vec3 defocus_disk_v;
         
         void init(){
             
             height = std::max(1,int(width/aspect_ratio));
             pixel_color_scale = 1.0/samples_per_pixel;
+            total_frames = runtime*fps;
             
             double h = std::tan(degrees_to_radians(vfov/2));
             double viewport_height = 2.0 * h * focus_dist;
@@ -77,12 +85,13 @@ class camera{
             pixel00loc = viewport_top_left + pixel_delta_u/2 + pixel_delta_v/2;
         }
 
-        ray get_ray(int i,int j) const{
+        ray get_ray(int i,int j,int frame_no) const{
             auto offset = sample_square();
             auto pixel_sample = pixel00loc + (i+offset.x)*pixel_delta_u + (j+offset.y)*pixel_delta_v;
             auto ray_origin = (defocus_angle <= 0) ? centre : defocus_disk_sample();
             auto direction = pixel_sample - ray_origin;
-            return ray(ray_origin,direction);
+            double time = (double)frame_no/fps;
+            return ray(ray_origin,direction,time);
         }
 
         vec3 sample_square() const{
@@ -107,11 +116,9 @@ class camera{
                 }
                 return color(0,0,0);
             }
-            // sky gradient (blue to white)
             color white = color(1,1,1);
-            color blue = color(0.5,0.5,1);
-            auto blue_intensity = normalise(r.direction()).y;
-            blue_intensity = 0.5 * (blue_intensity+1);
-            return white*(1-blue_intensity) + blue*blue_intensity;
+            auto color_intensity = normalise(r.direction()).y;
+            color_intensity = 0.5 * (color_intensity+1);
+            return white*(1-color_intensity) + sky_color*color_intensity;
         }
 };
