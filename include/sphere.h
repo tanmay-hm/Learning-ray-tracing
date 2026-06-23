@@ -9,14 +9,27 @@ class sphere : public hittable{
         ray centre;
         double radius;
         shared_ptr<material> mat;
+        aabb b_box;
     public: 
         sphere(const point3& static_c,double rad,shared_ptr<material> mat) : 
-        centre(static_c,vec3(0,0,0)),radius(std::fmax(0,rad)), mat(mat) {}
+        centre(static_c,vec3(0,0,0)),radius(std::fmax(0,rad)), mat(mat) {
+            vec3 rad_vec = vec3(radius,radius,radius);
+            b_box = aabb(static_c - rad_vec,static_c + rad_vec);
+        }
 
         sphere(const point3& c1,const point3& c2,double rad,shared_ptr<material> mat) : 
-        centre(c1,c2-c1),radius(std::fmax(0,rad)), mat(mat) {}
+        centre(c1,c2-c1),radius(std::fmax(0,rad)), mat(mat) {
+            vec3 rad_vec = vec3(radius,radius,radius);
+            auto bbox1 = aabb(centre.at(0) - rad_vec,centre.at(0) + rad_vec);
+            auto bbox2 = aabb(centre.at(1) - rad_vec,centre.at(1) + rad_vec);
+            b_box = aabb(bbox1,bbox2);
+        }
 
-        bool hit(const ray&r,const interval& t_range,hit_record& rec) const override{
+        aabb bounding_box() const override{
+            return b_box;
+        }
+
+        bool hit(const ray&r,interval t_range,hit_record& rec) const override{
             auto current_centre = centre.at(r.time());
             auto orig_centre = current_centre - r.origin();
             auto a = dot(r.direction(),r.direction());

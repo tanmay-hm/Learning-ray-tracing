@@ -7,6 +7,11 @@ class interval{
         interval() : min(infinity),max(-infinity) {}
         interval(double mini,double maxi) : min(mini), max(maxi) {}
 
+        interval(const interval& int1,const interval& int2){
+            min = std::fmin(int1.min,int2.min);
+            max = std::fmax(int1.max,int2.max);
+        }
+
         double size(){
             return max-min;
         }

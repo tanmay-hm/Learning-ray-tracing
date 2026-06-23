@@ -4,6 +4,7 @@
 #include "hittable_list.h"
 #include "camera.h"
 #include "material.h"
+#include "bvh.h"
 #include <fstream>
 
 using namespace std;

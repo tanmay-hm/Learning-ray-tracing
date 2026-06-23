@@ -54,6 +54,11 @@ class vec3{
         vec3& operator/=(double f){
             return *this*=(1/f);
         }
+        const double& operator[](int i) const{
+            if(i==0) return x;
+            else if(i==1) return y;
+            else return z;
+        }
 };
 
 using point3 = vec3;
