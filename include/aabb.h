@@ -53,4 +53,18 @@ class aabb{
             }
             return true;
         }
+        int longest_axis() const{
+            if(x.size() > y.size()){
+                if(x.size()>z.size()) return 0;
+                else return 2;
+            }
+            else{
+                if(z.size() > y.size()) return 2;
+                else return 1;
+            }
+        }
+        static const aabb empty,universe;
 };
+
+const aabb aabb::empty = aabb(interval::empty,interval::empty,interval::empty);
+const aabb aabb::universe = aabb(interval::universe,interval::universe,interval::universe);

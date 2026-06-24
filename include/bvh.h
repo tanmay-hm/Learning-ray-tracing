@@ -23,15 +23,21 @@ class bvh_node : public hittable{
                 right = objects[start+1];
             }
             else{
-                auto axis = random_int(0,2);
+                bbox = aabb::empty;
+
+                for(int i=start;i<end;i++){
+                    bbox = aabb(bbox,objects[i]->bounding_box());
+                }
+
+                auto axis = bbox.longest_axis();
+
                 auto compare = axis==0 ? box_x_compare : axis==1 ? box_y_compare : box_z_compare;
                 std::sort(objects.begin()+start,objects.end()+end,compare);
+                
                 int mid = (start+end)/2;
                 left = make_shared<bvh_node>(objects,start,mid);
                 right = make_shared<bvh_node>(objects,mid,end);
             }
-
-            bbox = aabb(left->bounding_box(), right->bounding_box());
         }
 
         bool hit(const ray& r,interval trange,hit_record& rec) const override{

@@ -12,7 +12,7 @@ class interval{
             max = std::fmax(int1.max,int2.max);
         }
 
-        double size(){
+        double size() const{
             return max-min;
         }
 
