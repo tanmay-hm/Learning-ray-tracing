@@ -5,11 +5,6 @@
 #include "material.h"
 
 class sphere : public hittable{
-    private:
-        ray centre;
-        double radius;
-        shared_ptr<material> mat;
-        aabb b_box;
     public: 
         sphere(const point3& static_c,double rad,shared_ptr<material> mat) : 
         centre(static_c,vec3(0,0,0)),radius(std::fmax(0,rad)), mat(mat) {
@@ -51,9 +46,23 @@ class sphere : public hittable{
             rec.t = root;
             rec.hit_location = r.at(rec.t);
             auto out_normal = (rec.hit_location - current_centre)/radius;
+            set_sphere_u_v(out_normal,rec.u,rec.v);
             rec.set_face_normal(r,out_normal);
             rec.mat = mat;
 
             return true;
         }
+        private:
+            ray centre;
+            double radius;
+            shared_ptr<material> mat;
+            aabb b_box;
+            void set_sphere_u_v(const point3& p,double& u,double& v) const{
+                
+                auto theta = std::acos(-p.y);
+                auto phi = std::atan2(-p.z,p.x) + pi;
+
+                u = phi/(2.0*pi);
+                v = theta/pi;
+            }
 };

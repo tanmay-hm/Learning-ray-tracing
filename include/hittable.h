@@ -10,6 +10,8 @@ struct hit_record{
     bool front_face;
     shared_ptr<material> mat;
     double t;
+    double u;
+    double v;
 
     void set_face_normal(const ray& r,const vec3& out_normal){
         if(dot(r.direction(),out_normal)>0.0){
